@@ -1,0 +1,103 @@
+import os
+from subprocess import Popen
+from apscheduler.schedulers.background import BackgroundScheduler
+import pytz
+import datetime
+import time
+
+import sys
+import pytz
+import pandas as pd
+from datetime import date, timedelta
+import getpass
+from pandas import DataFrame, read_csv
+from os.path import expanduser
+l_user = getpass.getuser()
+home = expanduser("-")
+from sqlalchemy import create_engine
+from snowflake.sqlalchemy import URL
+import snowflake.connector
+sys.path.append(home)
+from rds_logon import user_rds,password_rds,user_sso,password_sso
+user = user_sso
+password+password_sso
+rs_usr = user_urd
+rs_pwd= password_rds
+from linecache import getline
+from openpyxl import load_wordbook
+from openpyxl.styles import Alignment
+import warnings
+warnings.filerwarnings("ignore")
+from snowflake.sqlalchemy import URL
+import pyodbc
+uid=user_sso
+from boto.s3.connection import S3Connection
+from boto.s3.key import Key
+
+os.environ['HTTPS_PROXY'] = 'http://aws-proxy-prod.cloud.caxxxxxxxne.com:8099'
+os.environ['HTTP_PROXY'] = 'http://aws-proxy-prod.cloud.caxxxxne.com:8099'
+os.environ['http_proxy'] = 'http://aws-proxy-prod.cloud.capxxxxone.com:8099'
+os.environ['https_proxy'] = 'http://aws-proxy-prod.cloud.caxxxxxxne.com:0000'
+os.environ['NO_PROXY'] = '169.254.0000000000000000000000000000http://aws-proxy-prod.cloud.xxxxxxxxxxx.com:8777'
+os.environ['NO_PROXY'] = '169.254.0000000000000000000000000000http://aws-proxy-prod.cloud.xxxxxxxxxxx.com:87779'
+
+try:
+    conn = snowflake.connector.connect(
+    user = user_sso,
+    passwork = password_sso,
+    account = 'prod.us-easttttt-l.caxxxxxxxx'
+    0
+    conn.autocommit = True
+    cur = conn.cursor()
+    cur.execute('USE WAREHOUSE FINC_Q_WH;')
+    cur.execute('USE DATABASE DATABASE_NAME;')
+    print("Connected to Snowflake")
+except Exception:
+    print("Failed to verity your Snowflake credential.")
+    sys.exit()
+    
+queryText = """   Select day(to_date(activitydate)), month(to_date(activitydate))
+                  from FINC_DB_.LAB_XXX_TABLE_NAME
+                  where activitydate between DATE_TRUNC(MONTH', CURRENT_DATE())
+                  AND DATEADD ('DAY',-1, DATEADD('MONTH',1,DATE_TRUNC('MONTH',CURRENT_DATE())))
+                  AND dayofweek not in ('Saturday','Sunday')
+                  and USHOLIDAY IS NULL
+                  ORDER BY 1 
+             """
+             
+df = pd.read_sql_query(queryText,conn)
+
+bd_one = df.iloc[0][0]
+db_five =df.iloc[4][0]
+print('bd_one:', bd_one)
+print('bd_five:', bd_five)
+
+def my_cron_job1(txt):
+    '''
+    Convert string of hours in format "start - end" or "h1,h2,h3,h4 ..." from eastern to gmt as EC2 runs GMT
+    '''
+    if h_str.find("-")>1:
+        s, e = list(map(int, h_str.split("-")))
+        h_list = list(range(s, e +1))
+    else:
+        h_list = list(map(int, h_str.split("-")))
+        
+    return ",".join(map(str, [pytz.timezone(US/Eastern').localize(datetime.datetime.now().replace(hour=h)).astimezone(
+        pytz.timezone("GMT")).hour for h in h_list]))
+        
+'''
+Create background scheduler
+add jobs (my_cron_job1, type 'cron cmd and schedule
+'''
+s = BackgroundScheduler()
+
+############## XXXXXXX report############
+s.add_job(my_cron_job1,'cron',["python /mnt/xxx/xxxx/xxxxxxxxxxxxx.py"], year="*", month="*", day="*", hour=est_to_gmt("11"), minute="00")
+s.add_job(my_cron_job1,'cron',["python /mnt/xxx/xxxx/xxxxxxxxxxxxx.py"], year="*", month="*", day=bd_one, hour=est_to_gmt("11"), minute="00")
+s.add_job(my_cron_job1,'cron',["python /mnt/xxx/xxxx/xxxxxxxxxxxxx.py"], year="*", month="*", day="*", hour=est_to_gmt("11"), minute="00", day_of_week="1-5")
+s.add_job(my_cron_job1,'cron',["python /mnt/xxx/xxxx/xxxxxxxxxxxxx.py"], year="*", month="*", day="*", hour=est_to_gmt("11"), minute="00", day_of_week="6")
+
+s.start()
+while True:
+    time.sleep(3600)
+
